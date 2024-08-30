@@ -5,7 +5,6 @@ on:
   push:
     branches: [ main ]
 
-
 env:
   ALIYUN_REGISTRY: "${{ secrets.ALIYUN_REGISTRY }}"
   ALIYUN_NAME_SPACE: "${{ secrets.ALIYUN_NAME_SPACE }}"
@@ -13,9 +12,8 @@ env:
   ALIYUN_REGISTRY_PASSWORD: "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}"
 
 jobs:
-
   build:
-    name: Pull
+    name: Pull and Push to Aliyun
     runs-on: ubuntu-latest
     steps:
     - name: Before freeing up disk space
@@ -25,18 +23,13 @@ jobs:
         df -hT
         echo "=============================================================================="
 
-    # 增加可用磁盘空间
     - name: Maximize build space
       uses: easimon/maximize-build-space@master
       with:
-
         root-reserve-mb: 2048
         swap-size-mb: 128
         remove-dotnet: 'true'
         remove-haskell: 'true'
-        # 如果空间还是不够用，可以把以下开启，清理出更多空间
-        # remove-android: 'true'
-        # remove-codeql: 'true'
         build-mount-path: '/var/lib/docker/'
 
     - name: Restart docker
@@ -88,7 +81,7 @@ jobs:
             # 如果镜像存在于数组中，则添加temp_map
             if [[ -n "${temp_map[$image_name]}" ]]; then
                  # 如果temp_map已经存在镜像名，判断是不是同一命名空间
-                 if [[ "${temp_map[$image_name]}" != $name_space  ]]; then
+                 if [[ "${temp_map[$image_name]}" != "$name_space" ]]; then
                     echo "duplicate image name: $image_name"
                     duplicate_images[$image_name]="true"
                  fi
@@ -98,7 +91,6 @@ jobs:
             fi       
         done < images.txt
         
-        
         while IFS= read -r line || [ -n "$line" ]; do
             # 忽略空行与注释
             [[ -z "$line" ]] && continue
@@ -107,7 +99,7 @@ jobs:
             fi
         
             echo "docker pull $line"
-            docker pull $line
+            docker pull "$line"
             platform=$(echo "$line" | awk -F'--platform[ =]' '{if (NF>1) print $2}' | awk '{print $1}')
             echo "platform is $platform"
             # 如果存在架构信息 将架构信息拼到镜像名称前面
@@ -140,15 +132,15 @@ jobs:
             image_name_tag="${image_name_tag%%@*}"
             new_image="$ALIYUN_REGISTRY/$ALIYUN_NAME_SPACE/$platform_prefix$name_space_prefix$image_name_tag"
             echo "docker tag $image $new_image"
-            docker tag $image $new_image
+            docker tag "$image" "$new_image"
             echo "docker push $new_image"
-            docker push $new_image
+            docker push "$new_image"
             echo "开始清理磁盘空间"
             echo "=============================================================================="
             df -hT
             echo "=============================================================================="
-            docker rmi $image
-            docker rmi $new_image
+            docker rmi "$image"
+            docker rmi "$new_image"
             echo "磁盘空间清理完毕"
             echo "=============================================================================="
             df -hT
