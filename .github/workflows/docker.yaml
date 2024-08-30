@@ -63,7 +63,11 @@ jobs:
             if echo "$line" | grep -q '^\s*#'; then
                 continue
             fi
-            # ... 后续处理 ...
+            # 处理镜像名称和标签
+            image_name=$(echo "$line" | awk '{print $1}')
+            image_tag=$(echo "$line" | awk '{print $2}')
+            # 构建Docker镜像
+            docker build -t ${{ secrets.ALIYUN_REGISTRY }}/${ALIYUN_NAME_SPACE}/$image_name:$image_tag .
+            # 推送Docker镜像到阿里云
+            docker push ${{ secrets.ALIYUN_REGISTRY }}/${ALIYUN_NAME_SPACE}/$image_name:$image_tag
         done < images.txt
-        
-        # ... 后续处理 ...
