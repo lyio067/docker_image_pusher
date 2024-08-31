@@ -50,7 +50,7 @@ jobs:
 
     - name: Docker Login
       run: |
-        echo ${{ secrets.ALIYUN_REGISTRY_PASSWORD }} | docker login ${{ secrets.ALIYUN_REGISTRY }} -u ${{ secrets.ALIYUN_REGISTRY_USER }} --password-stdin
+          echo "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}" | docker login ${{ secrets.ALIYUN_REGISTRY }} -u ${{ secrets.ALIYUN_REGISTRY_USER }} --password-stdin
 
     - name: Build and push image Aliyun
       run: |
