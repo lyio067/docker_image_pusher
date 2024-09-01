@@ -42,7 +42,7 @@ jobs:
     - name: Print registry and namespace
       run: |
         echo "Registry: ${{ secrets.ALIYUN_REGISTRY }}"
-        echo "Namespace: ${ALIYUN_NAME_SPACE}"
+        echo "Namespace: ${{ secrets.ALIYUN_NAME_SPACE }}"
 
     - name: Build and push image Aliyun
       run: |
@@ -59,7 +59,14 @@ jobs:
             image_name=$(echo "$line" | awk '{print $1}')
             image_tag=$(echo "$line" | awk '{print $2}')
             # 构建Docker镜像
-            docker build -t ${{ secrets.ALIYUN_REGISTRY }}/${ALIYUN_NAME_SPACE}/$image_name:$image_tag .
+            docker build -t ${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAME_SPACE }}/$image_name:$image_tag .
             # 推送Docker镜像到阿里云
-            docker push ${{ secrets.ALIYUN_REGISTRY }}/${ALIYUN_NAME_SPACE}/$image_name:$image_tag
+            docker push ${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAME_SPACE }}/$image_name:$image_tag
         done < images.txt
+
+    - name: Check for errors
+      run: |
+        if [ $? -ne 0 ]; then
+          echo "Error occurred during build or push"
+          exit 1
+        fi
