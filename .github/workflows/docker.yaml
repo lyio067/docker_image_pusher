@@ -1,16 +1,3 @@
-name: Docker
-
-on:
-  workflow_dispatch:
-  push:
-    branches: [ main ]
-
-env:
-  ALIYUN_REGISTRY: "${{ secrets.ALIYUN_REGISTRY }}"
-  ALIYUN_NAME_SPACE: "${{ secrets.ALIYUN_NAME_SPACE }}"
-  ALIYUN_REGISTRY_USER: "${{ secrets.ALIYUN_REGISTRY_USER }}"
-  ALIYUN_REGISTRY_PASSWORD: "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}"
-
 jobs:
   build:
     name: Pull and Push to Aliyun
@@ -51,6 +38,11 @@ jobs:
     - name: Docker Login
       run: |
           echo "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}" | docker login ${{ secrets.ALIYUN_REGISTRY }} -u ${{ secrets.ALIYUN_REGISTRY_USER }} --password-stdin
+
+    - name: Print registry and namespace
+      run: |
+        echo "Registry: ${{ secrets.ALIYUN_REGISTRY }}"
+        echo "Namespace: ${ALIYUN_NAME_SPACE}"
 
     - name: Build and push image Aliyun
       run: |
